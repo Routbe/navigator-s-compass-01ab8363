@@ -6,7 +6,7 @@ import { useId } from "react";
  * het teken moet overal identiek ogen. Lichte rand houdt het zichtbaar op donker.
  */
 export function CreatorBadgeIcon({ className = "h-5 w-5" }: { className?: string }) {
-  const uid = useId().replace(/:/g, "");
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const pts: string[] = [];
   for (let i = 0; i < 24; i++) {
     const a = (Math.PI * 2 * i) / 24 - Math.PI / 2;

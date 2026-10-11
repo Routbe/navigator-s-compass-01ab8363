@@ -6,7 +6,7 @@ import { useId } from "react";
  * lichte buitenrand houdt het zichtbaar op een zwarte achtergrond.
  */
 export function DomainBadgeIcon({ className = "h-5 w-5" }: { className?: string }) {
-  const uid = useId().replace(/:/g, "");
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   return (
     <svg viewBox="0 0 24 24" className={className} role="img" aria-hidden focusable="false">
       <defs>
