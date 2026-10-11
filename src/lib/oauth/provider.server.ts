@@ -437,14 +437,20 @@ export async function removeTestUser(ownerUserId: string, id: string, identifier
     where client_id = ${clientId} and identifier = ${identifier.toLowerCase()}`;
 }
 
+/** First-party platform clients (no owner, e.g. `rout_native_self`) are never in test mode. */
+export const SYSTEM_CLIENT_IDS = new Set(["rout_native_self"]);
+
 /** Testing-modus: enkel eigenaar en testgebruikers (e-mail of handle) mogen inloggen. */
 export async function userMayUseClient(
   client: OAuthClient,
   user: { id: string; email: string },
 ): Promise<boolean> {
   if (client.publishingStatus === "production") return true;
+  if (SYSTEM_CLIENT_IDS.has(client.clientId)) return true;
   const owner = (await sql`select owner_user_id from public.oauth_clients
     where client_id = ${client.clientId} limit 1`) as Row[];
+  // Platform login (owner null) is ROUT's own sign-in, not a developer app.
+  if (owner[0] && owner[0]["owner_user_id"] == null) return true;
   if (String(owner[0]?.["owner_user_id"]) === user.id) return true;
   let handles: Row[] = [];
   try {
