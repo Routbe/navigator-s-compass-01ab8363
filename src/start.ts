@@ -1,7 +1,7 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { securityHeaders, sessionCookieProblems } from "./lib/security-headers";
+import { isStrictPath, securityHeaders, sessionCookieProblems } from "./lib/security-headers";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -40,9 +40,11 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ request, ne
   if (headers) {
     const url = new URL(request.url);
     const https = url.protocol === "https:" || request.headers.get("x-forwarded-proto") === "https";
-    for (const [k, v] of Object.entries(securityHeaders(https))) {
+    for (const [k, v] of Object.entries(securityHeaders(https, url.pathname))) {
       if (!headers.has(k)) headers.set(k, v);
     }
+    // Public pages must never carry cross-origin isolation (Opera ERR_BLOCKED_BY_RESPONSE).
+    if (!isStrictPath(url.pathname)) headers.delete("cross-origin-embedder-policy");
     // Server functions are same-origin only; never let them answer cross-origin.
     if (url.pathname.startsWith("/_serverFn")) headers.delete("access-control-allow-origin");
     if (https) {
