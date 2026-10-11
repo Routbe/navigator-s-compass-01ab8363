@@ -93,6 +93,32 @@ function traceContext(request: Request, relativePath?: string) {
   };
 }
 
+/**
+ * Host the visitor's browser is on. Origin/Referer win over Host headers:
+ * behind a proxy (Vercel) `x-forwarded-host` can be the internal deployment
+ * host, which made GitLab bounce visitors on rout.be back to the same page.
+ */
+export function browserHost(request: Request): string {
+  for (const h of ["origin", "referer"]) {
+    const v = request.headers.get(h);
+    if (v && v !== "null") {
+      try {
+        return new URL(v).host.toLowerCase();
+      } catch {
+        /* try next */
+      }
+    }
+  }
+  return (request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host") || "").toLowerCase();
+}
+
+/** GitLab returns only to its registered host; start there when the browser is elsewhere. */
+export function gitlabNeedsCanonicalHost(host: string, target: string): boolean {
+  if (!host) return false;
+  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) return false;
+  return host !== target.toLowerCase();
+}
+
 export async function handleAuthRequest({ request }: { request: Request }) {
   try {
     const { createRoutAuth, isProviderConfigured, missingProviderKeys } = await import("@/lib/better-auth.server");
@@ -111,10 +137,8 @@ export async function handleAuthRequest({ request }: { request: Request }) {
 
     if (provider === "gitlab" && SOCIAL_BODY_PATHS.has(relativePath)) {
       const { canonicalAuthOrigin, gitlabRedirectUri } = await import("@/lib/better-auth.server");
-      const target = new URL(gitlabRedirectUri()).host;
-      const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host") || "";
-      const local = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
-      if (host && !local && host !== target) {
+      const host = browserHost(request);
+      if (gitlabNeedsCanonicalHost(host, new URL(gitlabRedirectUri()).host)) {
         // State cookie lives on the request host; GitLab returns to the canonical
         // host. Start the flow there instead of failing with state_mismatch.
         console.warn(`[auth] gitlab sign-in on ${host}; sending to ${canonicalAuthOrigin()}`);
