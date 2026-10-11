@@ -115,7 +115,9 @@ export function isValidRedirectUri(value: string): boolean {
 }
 
 export function issuer(): string {
-  return (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).replace(/\/$/, "");
+  // Altijd absoluut (schema + host, zonder afsluitende /) zodat OIDC-clients zoals Keycloak geldige URL's bouwen.
+  const raw = (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).trim().replace(/\/+$/, "");
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
 let tablesReady = false;
