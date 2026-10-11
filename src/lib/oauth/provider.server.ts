@@ -1,4 +1,5 @@
 import { routHandleClaim } from "./handle-sync";
+import { cleanRedirectUri, findMatchingRedirect, normalizeRedirectUri, redirectUrisMatch } from "./redirect-match";
 import { runSchemaEnsure } from "@/lib/db/schema-ensure.server";
 /**
  * "Login met ROUT" — native OAuth 2.1 / OIDC provider.
@@ -96,9 +97,9 @@ export async function sha256Base64Url(value: string): Promise<string> {
   return base64url(new Uint8Array(digest));
 }
 
-/** Exacte, letterlijke vergelijking van een redirect-URI tegen de whitelist. */
+/** Genormaliseerde (maar strikte) vergelijking tegen de whitelist — zie redirect-match.ts. */
 export function redirectAllowed(client: OAuthClient, redirectUri: string): boolean {
-  return client.redirectUris.some((uri) => uri === redirectUri);
+  return findMatchingRedirect(client.redirectUris, redirectUri) !== null;
 }
 
 /** Alleen https in productie; http uitsluitend voor localhost-ontwikkeling. */
@@ -114,7 +115,9 @@ export function isValidRedirectUri(value: string): boolean {
 }
 
 export function issuer(): string {
-  return (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).replace(/\/$/, "");
+  // Altijd absoluut (schema + host, zonder afsluitende /) zodat OIDC-clients zoals Keycloak geldige URL's bouwen.
+  const raw = (process.env["NEXT_PUBLIC_APP_URL"] || canonicalAppUrl()).trim().replace(/\/+$/, "");
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 }
 
 let tablesReady = false;
@@ -276,7 +279,16 @@ export type ClientInput = {
 };
 
 function sanitize(input: ClientInput) {
-  const uris = [...new Set(input.redirectUris.map((u) => u.trim()).filter(Boolean))];
+  // Opschonen + dedupliceren op genormaliseerde vorm (spaties, onzichtbare tekens, geëncodeerde plak).
+  const seen = new Set<string>();
+  const uris = input.redirectUris
+    .map((u) => cleanRedirectUri(u))
+    .filter((u) => {
+      const key = normalizeRedirectUri(u) ?? u;
+      if (!u || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   const bad = uris.find((u) => !isValidRedirectUri(u));
   if (bad) throw new OAuthError("invalid_redirect_uri", `Ongeldige redirect-URI: ${bad}`);
   const scopes = [...new Set(input.scopes.filter((s) => SUPPORTED_SCOPES.includes(s as Scope)))];
@@ -690,7 +702,10 @@ export async function exchangeAuthorizationCode(input: {
   if (String(row["client_id"]) !== input.clientId) {
     throw new OAuthError("invalid_grant", "Deze code hoort bij een andere app.");
   }
-  if (String(row["redirect_uri"]) !== input.redirectUri) {
+  if (!redirectUrisMatch(String(row["redirect_uri"]), input.redirectUri)) {
+    console.error(
+      `[OIDC Token] redirect_uri mismatch for client ${input.clientId}. Authorize used: ${JSON.stringify(String(row["redirect_uri"]))} | Token request: ${JSON.stringify(input.redirectUri)}`,
+    );
     throw new OAuthError("invalid_grant", "De redirect-URI komt niet overeen.");
   }
   const storedChallenge = String(row["code_challenge"] ?? "");
