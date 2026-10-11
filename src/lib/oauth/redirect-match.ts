@@ -14,7 +14,7 @@ const INVISIBLE = /[\u0000-\u0020\u007f\u00a0\u200b-\u200d\u2060\ufeff]/g;
 function decodeIfFullyEncoded(value: string): string {
   let v = value;
   // Max 2 rondes: Keycloak/brokers sturen soms een reeds geëncodeerde waarde door.
-  for (let i = 0; i < 2 && /^[a-z][a-z0-9+.-]*%3a/i.test(v); i++) {
+  for (let i = 0; i < 2 && /^[a-z][a-z0-9+.-]*%(?:25)*3a/i.test(v); i++) {
     try {
       v = decodeURIComponent(v);
     } catch {
