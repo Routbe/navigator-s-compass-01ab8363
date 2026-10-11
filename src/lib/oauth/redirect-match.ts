@@ -33,9 +33,14 @@ function normalizePath(path: string): string {
   return p.length > 1 ? p.replace(/\/$/, "") : p;
 }
 
+/** Opgeschoonde vorm van een binnenkomende URI (onzichtbare tekens weg, volledig-geëncodeerd gedecodeerd). */
+export function cleanRedirectUri(raw: string): string {
+  return decodeIfFullyEncoded(raw.replace(INVISIBLE, ""));
+}
+
 export function normalizeRedirectUri(raw: string | null | undefined): string | null {
   if (typeof raw !== "string") return null;
-  const cleaned = decodeIfFullyEncoded(raw.replace(INVISIBLE, ""));
+  const cleaned = cleanRedirectUri(raw);
   let u: URL;
   try {
     u = new URL(cleaned);
