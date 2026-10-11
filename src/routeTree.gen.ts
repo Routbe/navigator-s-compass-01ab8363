@@ -122,6 +122,8 @@ import { Route as ApiPublicCronScanTransfersRouteImport } from './routes/api_.pu
 import { Route as ApiPublicCronSecureshieldBillingRouteImport } from './routes/api_.public.cron.secureshield-billing'
 import { Route as ApiPublicCronSyncFollowersRouteImport } from './routes/api_.public.cron.sync-followers'
 import { Route as ApiPublicCronSyncSocialsRouteImport } from './routes/api_.public.cron.sync-socials'
+import { Route as ApiPublicIdentityDiditWebhookRouteImport } from './routes/api_.public.identity.didit-webhook'
+import { Route as ApiPublicIdentityWCallbackRouteImport } from './routes/api_.public.identity.w-callback'
 import { Route as ApiPublicMastodonServersRouteImport } from './routes/api_.public.mastodon.servers'
 import { Route as ApiPublicMastodonStartRouteImport } from './routes/api_.public.mastodon.start'
 import { Route as ApiPublicOauthTokenRouteImport } from './routes/api_.public.oauth.token'
@@ -740,6 +742,18 @@ const ApiPublicCronSyncSocialsRoute =
     path: '/api/public/cron/sync-socials',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIdentityDiditWebhookRoute =
+  ApiPublicIdentityDiditWebhookRouteImport.update({
+    id: '/api_/public/identity/didit-webhook',
+    path: '/api/public/identity/didit-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIdentityWCallbackRoute =
+  ApiPublicIdentityWCallbackRouteImport.update({
+    id: '/api_/public/identity/w-callback',
+    path: '/api/public/identity/w-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicMastodonServersRoute =
   ApiPublicMastodonServersRouteImport.update({
     id: '/api_/public/mastodon/servers',
@@ -1002,6 +1016,8 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1138,6 +1154,8 @@ export interface FileRoutesByTo {
   '/api/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1280,6 +1298,8 @@ export interface FileRoutesById {
   '/api_/public/cron/secureshield-billing': typeof ApiPublicCronSecureshieldBillingRoute
   '/api_/public/cron/sync-followers': typeof ApiPublicCronSyncFollowersRoute
   '/api_/public/cron/sync-socials': typeof ApiPublicCronSyncSocialsRoute
+  '/api_/public/identity/didit-webhook': typeof ApiPublicIdentityDiditWebhookRoute
+  '/api_/public/identity/w-callback': typeof ApiPublicIdentityWCallbackRoute
   '/api_/public/mastodon/servers': typeof ApiPublicMastodonServersRoute
   '/api_/public/mastodon/start': typeof ApiPublicMastodonStartRoute
   '/api_/public/oauth/token': typeof ApiPublicOauthTokenRoute
@@ -1422,6 +1442,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/secureshield-billing'
     | '/api/public/cron/sync-followers'
     | '/api/public/cron/sync-socials'
+    | '/api/public/identity/didit-webhook'
+    | '/api/public/identity/w-callback'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
     | '/api/public/oauth/token'
@@ -1558,6 +1580,8 @@ export interface FileRouteTypes {
     | '/api/public/cron/secureshield-billing'
     | '/api/public/cron/sync-followers'
     | '/api/public/cron/sync-socials'
+    | '/api/public/identity/didit-webhook'
+    | '/api/public/identity/w-callback'
     | '/api/public/mastodon/servers'
     | '/api/public/mastodon/start'
     | '/api/public/oauth/token'
@@ -1699,6 +1723,8 @@ export interface FileRouteTypes {
     | '/api_/public/cron/secureshield-billing'
     | '/api_/public/cron/sync-followers'
     | '/api_/public/cron/sync-socials'
+    | '/api_/public/identity/didit-webhook'
+    | '/api_/public/identity/w-callback'
     | '/api_/public/mastodon/servers'
     | '/api_/public/mastodon/start'
     | '/api_/public/oauth/token'
@@ -1806,6 +1832,8 @@ export interface RootRouteChildren {
   ApiPublicCronSecureshieldBillingRoute: typeof ApiPublicCronSecureshieldBillingRoute
   ApiPublicCronSyncFollowersRoute: typeof ApiPublicCronSyncFollowersRoute
   ApiPublicCronSyncSocialsRoute: typeof ApiPublicCronSyncSocialsRoute
+  ApiPublicIdentityDiditWebhookRoute: typeof ApiPublicIdentityDiditWebhookRoute
+  ApiPublicIdentityWCallbackRoute: typeof ApiPublicIdentityWCallbackRoute
   ApiPublicMastodonServersRoute: typeof ApiPublicMastodonServersRoute
   ApiPublicMastodonStartRoute: typeof ApiPublicMastodonStartRoute
   ApiPublicOauthTokenRoute: typeof ApiPublicOauthTokenRoute
@@ -2614,6 +2642,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncSocialsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/identity/didit-webhook': {
+      id: '/api_/public/identity/didit-webhook'
+      path: '/api/public/identity/didit-webhook'
+      fullPath: '/api/public/identity/didit-webhook'
+      preLoaderRoute: typeof ApiPublicIdentityDiditWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api_/public/identity/w-callback': {
+      id: '/api_/public/identity/w-callback'
+      path: '/api/public/identity/w-callback'
+      fullPath: '/api/public/identity/w-callback'
+      preLoaderRoute: typeof ApiPublicIdentityWCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/mastodon/servers': {
       id: '/api_/public/mastodon/servers'
       path: '/api/public/mastodon/servers'
@@ -3090,6 +3132,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronSecureshieldBillingRoute: ApiPublicCronSecureshieldBillingRoute,
   ApiPublicCronSyncFollowersRoute: ApiPublicCronSyncFollowersRoute,
   ApiPublicCronSyncSocialsRoute: ApiPublicCronSyncSocialsRoute,
+  ApiPublicIdentityDiditWebhookRoute: ApiPublicIdentityDiditWebhookRoute,
+  ApiPublicIdentityWCallbackRoute: ApiPublicIdentityWCallbackRoute,
   ApiPublicMastodonServersRoute: ApiPublicMastodonServersRoute,
   ApiPublicMastodonStartRoute: ApiPublicMastodonStartRoute,
   ApiPublicOauthTokenRoute: ApiPublicOauthTokenRoute,

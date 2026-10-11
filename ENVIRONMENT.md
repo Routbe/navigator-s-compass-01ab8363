@@ -151,3 +151,14 @@ Server-only, 32+ random characters. Encrypts stored phone numbers (AES-GCM) and 
 
 ## SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET
 Live Presence (Studio → Verbindingen & Integraties). Create an app at developer.spotify.com/dashboard and add the redirect URI `<PUBLIC_SITE_URL>/api/public/spotify/callback`. Needs `PSP_ENCRYPTION_KEY` too (tokens are encrypted).
+
+## Identity verification (KYC)
+- `IDENTITY_HASH_PEPPER` — Server-only random secret used to HMAC provider person IDs into `unique_human_id`. Never rotate after launch (would break the 1-person rule).
+- `W_IDENTITY_ISSUER`, `W_IDENTITY_CLIENT_ID`, `W_IDENTITY_CLIENT_SECRET` — W Identity OIDC client. Redirect URI: `https://rout.be/api/public/identity/w-callback`.
+- `DIDIT_API_KEY`, `DIDIT_WORKFLOW_ID`, `DIDIT_WEBHOOK_SECRET` — Didit passport scan. Webhook URL: `https://rout.be/api/public/identity/didit-webhook`. Max 500 successful scans per month.
+
+## Cron schedule
+`vercel.json` schedules `/api/public/cron/cleanup-assets` (daily, removes expired `user_assets` and `shared_files` from storage and database), `purge-altcha` and `check-dns`. Vercel sends `Authorization: Bearer $CRON_SECRET`. On other hosts call the same URLs from any scheduler with that header.
+
+## Telegram
+Register the webhook once with `TELEGRAM_BOT_TOKEN=... bun scripts/telegram-set-webhook.ts https://rout.be` (secret token is derived from the bot token).
